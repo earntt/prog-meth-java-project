@@ -1,0 +1,330 @@
+@startuml
+class gui.CardImage {
+- {static} Image CARD_BACK
+- {static} Map<Card,Image> CARD_IMAGES
+- <<Create>> CardImage()
++ {static} Image imageFor(Card)
++ {static} Image imageForBackOfCard()
+- {static} Image loadBackImage()
+- {static} Map<Card,Image> loadCardImages()
+- {static} String getFileNameFor(Card)
+}
+class gui.Main {
+- {static} int WIDTH
+- {static} int HEIGHT
+- {static} int MARGIN_OUTER
+- {static} String TITLE
+- {static} String VERSION
+- boolean isSoundPlaying
+- SoundPlayer gameMusic
+- SoundPlayer giveUpSound
+- SoundPlayer buttonSound
+- SoundPlayer homePageSound
++ <<Create>> Main()
++ {static} void main(String[])
++ void start(Stage)
+}
+class gui.DeckView {
+- {static} String BUTTON_STYLE_NORMAL
+- {static} String BUTTON_STYLE_PRESSED
+- {static} int IMAGE_NEW_LINE_WIDTH
+- {static} int IMAGE_FONT_SIZE
+- GameModel aModel
+~ SoundPlayer cardSound
+~ <<Create>> DeckView(GameModel)
+- Canvas createNewGameImage()
++ void gameStateChanged()
++ void reset()
+}
+enum model.TableauPile {
++  FIRST
++  SECOND
++  THIRD
++  FOURTH
++  FIFTH
++  SIXTH
++  SEVENTH
+}
+class gui.CardDragHandler {
+- {static} ClipboardContent CLIPBOARD_CONTENT
+- Card aCard
+- ImageView aImageView
+~ <<Create>> CardDragHandler(ImageView)
+~ void setCard(Card)
++ void handle(MouseEvent)
+}
+enum model.OtherLocation {
++  DISCARD_PILE
+}
+interface model.GameModelListener {
+~ void gameStateChanged()
+}
+class model.Foundation {
+- Map<FoundationPile,CardStack> aPiles
+~ <<Create>> Foundation()
+~ int getTotalSize()
+~ void initialize()
+~ boolean isEmpty(FoundationPile)
+~ boolean canMoveTo(Card,FoundationPile)
+~ Card peek(FoundationPile)
+~ void push(Card,FoundationPile)
+~ Card pop(FoundationPile)
+}
+interface model.GameModelView {
+~ boolean isDiscardPileEmpty()
+~ boolean isDeckEmpty()
+~ boolean isFoundationPileEmpty(FoundationPile)
+~ Card peekDiscardPile()
+~ CardStack getTableauPile(TableauPile)
+~ boolean isVisibleInTableau(Card)
+~ boolean isLowestVisibleInTableau(Card)
+~ boolean isBottomKing(Card)
+~ boolean isLegalMove(Card,Location)
+~ Move getNullMove()
+~ Move getDiscardMove()
+~ Move getCardMove(Card,Location)
+}
+interface model.Move {
+~ void perform()
+~ void undo()
+~ boolean isNull()
+}
+enum cards.Rank {
++  ACE
++  TWO
++  THREE
++  FOUR
++  FIVE
++  SIX
++  SEVEN
++  EIGHT
++  NINE
++  TEN
++  JACK
++  QUEEN
++  KING
+}
+class model.GameModel {
+- {static} Move NULL_MOVE
+- Move aDiscardMove
+- Deck aDeck
+- Stack<Move> aMoves
+- CardStack aDiscard
+- Foundation aFoundation
+- Tableau aTableau
+- List<GameModelListener> aListeners
++ <<Create>> GameModel()
++ int getScore()
++ void addListener(GameModelListener)
+- void notifyListeners()
++ void reset()
++ boolean isCompleted()
++ boolean isDeckEmpty()
++ boolean isDiscardPileEmpty()
++ boolean isFoundationPileEmpty(FoundationPile)
++ Card peekSuitStack(FoundationPile)
++ Card peekDiscardPile()
+- Location find(Card)
++ void undoLast()
++ boolean canUndo()
+- void absorbCard(Location)
+- void move(Card,Location)
++ CardStack getDiscard()
++ Deck getDeck()
++ void resetDeck()
++ CardStack getTableauPile(TableauPile)
++ boolean isVisibleInTableau(Card)
++ boolean isLowestVisibleInTableau(Card)
++ CardStack getSubStack(Card,TableauPile)
++ boolean isLegalMove(Card,Location)
++ Move getNullMove()
++ Move getDiscardMove()
++ Move getCardMove(Card,Location)
++ boolean isBottomKing(Card)
+}
+class model.GameModel$CardMove {
+- Card aCard
+- Location aOrigin
+- Location aDestination
+~ <<Create>> CardMove(Card,Location)
++ void perform()
++ void undo()
+}
+class model.GameModel$RevealTopMove {
+- TableauPile aIndex
+~ <<Create>> RevealTopMove(TableauPile)
++ void perform()
++ void undo()
+}
+class gui.CardPileView {
+- {static} int PADDING
+- {static} int Y_OFFSET
+- {static} ClipboardContent CLIPBOARD_CONTENT
+- TableauPile aIndex
+- GameModel aModel
+~ SoundPlayer cardSound
+~ <<Create>> CardPileView(GameModel,TableauPile)
+- Image getImage(Card)
+- void buildLayout()
+- EventHandler<MouseEvent> createDragDetectedHandler(ImageView,Card)
+- EventHandler<DragEvent> createDragOverHandler(ImageView,Card)
+- EventHandler<DragEvent> createDragEnteredHandler(ImageView,Card)
+- EventHandler<DragEvent> createDragExitedHandler(ImageView,Card)
+- EventHandler<DragEvent> createDragDroppedHandler(ImageView,Card)
++ void gameStateChanged()
+}
+class gui.SoundPlayer {
+- String musicFile
+- Media sound
+- MediaPlayer mediaPlayer
+- boolean playingStatus
++ <<Create>> SoundPlayer(String)
++ void setLoop()
++ void startPlay()
++ void stopPlay()
++ void setVolume(double)
++ void setPlayingStatus(boolean)
++ boolean isPlaying()
+}
+enum cards.Suit {
++  CLUBS
++  DIAMONDS
++  HEARTS
++  SPADES
++ boolean sameColorAs(Suit)
+}
+class model.CompositeMove {
+- List<Move> aMoves
++ <<Create>> CompositeMove(Move)
++ void perform()
++ void undo()
+}
+class cards.CardStack {
++ <<Create>> CardStack()
++ <<Create>> CardStack(Iterable<Card>)
++ void push(Card)
++ Card pop()
++ Card peek()
++ Card peek(int)
++ int size()
++ void clear()
++ boolean isEmpty()
++ String toString()
++ Iterator<Card> iterator()
++ List<Card> getACards()
++ void setACards(List<Card>)
+}
+enum model.FoundationPile {
++  FIRST
++  SECOND
++  THIRD
++  FOURTH
+}
+class cards.Card {
+- {static} Map<Suit,Map<Rank,Card>> CARDS
+- Rank aRank
+- Suit aSuit
+- <<Create>> Card(Rank,Suit)
++ {static} Card get(Rank,Suit)
++ Rank getARank()
++ Suit getASuit()
++ String toString()
+- {static} String titleCase(Enum<?>)
+}
+class gui.DiscardPileView {
+- {static} int PADDING
+- CardDragHandler aDragHandler
+- GameModel aModel
+~ <<Create>> DiscardPileView(GameModel)
++ void gameStateChanged()
+}
+class cards.Deck {
++ <<Create>> Deck()
++ void shuffle()
++ void push(Card)
++ Card pop()
++ boolean isEmpty()
++ List<Card> getACards()
++ void setACards(List<Card>)
+}
+interface model.Location {
+}
+class cards.BaseStack {
+# List<Card> aCards
++ <<Create>> BaseStack()
++ void push(Card)
++ Card pop()
++ boolean isEmpty()
++ void setACards(List<Card>)
++ List<Card> getACards()
+}
+class gui.SuitStack {
+- {static} int PADDING
+- {static} String BORDER_STYLE
+- {static} String BORDER_STYLE_DRAGGED
+- {static} String BORDER_STYLE_NORMAL
+- CardDragHandler aDragHandler
+- FoundationPile aIndex
+- GameModel aModel
+~ SoundPlayer cardSound
+~ <<Create>> SuitStack(GameModel,FoundationPile)
++ void gameStateChanged()
+- EventHandler<DragEvent> createOnDragOverHandler(ImageView)
+- EventHandler<DragEvent> createOnDragEnteredHandler()
+- EventHandler<DragEvent> createOnDragExitedHandler()
+- EventHandler<DragEvent> createOnDragDroppedHandler()
+}
+class model.Tableau {
+- Map<TableauPile,CardStack> aPiles
+- Set<Card> aVisible
+~ <<Create>> Tableau()
+~ void initialize(Deck)
+~ boolean canMoveTo(Card,TableauPile)
++ boolean isBottomKing(Card)
+~ CardStack getPile(TableauPile)
+- TableauPile getPile(Card)
+~ boolean revealsTop(Card)
+- Optional<Card> getPreviousCard(Card)
+~ void moveWithin(Card,TableauPile,TableauPile)
+~ CardStack getSequence(Card,TableauPile)
+~ void showTop(TableauPile)
+~ void hideTop(TableauPile)
+~ boolean contains(Card,TableauPile)
+~ boolean contains(Card)
+~ boolean isVisible(Card)
+~ boolean isLowestVisible(Card)
+~ void pop(TableauPile)
+~ void push(Card,TableauPile)
+}
+class cards.CardSerializer {
+- {static} String SEPARATOR
+- <<Create>> CardSerializer()
+- {static} String cardToInt(Card)
+- {static} Card intToCard(int)
++ {static} String serialize(Card)
++ {static} String serialize(CardStack)
++ {static} CardStack deserialize(String)
++ {static} Card deserializeBottomCard(String)
+}
+
+
+javafx.application.Application <|-- gui.Main
+model.GameModelListener <|.. gui.DeckView
+javafx.scene.layout.HBox <|-- gui.DeckView
+javafx.event.EventHandler <|.. gui.CardDragHandler
+model.GameModelView <|.. model.GameModel
+model.GameModel +.. model.GameModel$CardMove
+model.Move <|.. model.GameModel$CardMove
+model.GameModel +.. model.GameModel$RevealTopMove
+model.Move <|.. model.GameModel$RevealTopMove
+model.GameModelListener <|.. gui.CardPileView
+javafx.scene.layout.StackPane <|-- gui.CardPileView
+model.Move <|.. model.CompositeMove
+cards.Iterable <|.. cards.CardStack
+cards.BaseStack <|-- cards.CardStack
+model.GameModelListener <|.. gui.DiscardPileView
+javafx.scene.layout.HBox <|-- gui.DiscardPileView
+cards.BaseStack <|-- cards.Deck
+model.GameModelListener <|.. gui.SuitStack
+javafx.scene.layout.StackPane <|-- gui.SuitStack
+@enduml
